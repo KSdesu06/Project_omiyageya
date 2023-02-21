@@ -49,11 +49,18 @@ exports.login = async (req, res, next) => {
     try {
         const {email, password} = req.body
 
-        const errors = validationResult(req)
-        if(!errors.isEmpty) {
-            const error = new Error("ข้อมูลที่ได้รับมาไม่ถูกต้อง")
-            error.statusCode = 422
-            error.validation = errors.array()
+        // const errors = validationResult(req)
+        // if(!errors.isEmpty) {
+        //     const error = new Error("ข้อมูลที่ได้รับมาไม่ถูกต้อง")
+        //     error.statusCode = 422
+        //     error.validation = errors.array()
+        //     throw error
+        // }
+
+        const user = await User.findOne({email: email})
+        if(!user) {
+            const error = new Error("ไม่พบผู้ใช้งานในระบบ")
+            error.statusCode = 400
             throw error
         }
 
@@ -69,7 +76,7 @@ exports.login = async (req, res, next) => {
             role: user.role
         },
         config.JWT_SECRET,
-        {expiresIn: "3"})
+        {expiresIn: '3 days'})
 
         const expires_in = jwt.decode(token)
 
