@@ -2,8 +2,8 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const schema = new Schema ({
-    name: {type: String, require: true, trim: true},
-    numOfProduct: Number
+    name: {type: String, required: true, trim: true},
+    numOfProduct: {type: Number, default: 0}
 },{
     toJSON: {virtuals: true},
     timestamps: true,

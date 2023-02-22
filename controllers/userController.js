@@ -2,10 +2,10 @@ const { validationResult } = require('express-validator')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
 const config = require('../config/index')
-const user = require('../models/user')
 const e = require('express')
 
-exports.user = async (req, res, next) => {
+exports.alluser = async (req, res, next) => {
+    const user = await User.find().sort({_id: -1})
     res.status(200).json({
         data: user
     })
@@ -16,8 +16,8 @@ exports.register = async (req, res, next) => {
         const {name, email, password} = req.body
 
         const errors = validationResult(req)
-        if (!errors.isEmpty) {
-            const error = new Error("ข้อมูลที่ได้รับมาไม่ถูกต้อง")
+        if (!errors.isEmpty()) {
+            const error = new Error("The received data is not valid.")
             error.statusCode = 422
             error.validation = errors.array()
             throw error
@@ -25,7 +25,7 @@ exports.register = async (req, res, next) => {
 
         const existEmail = await User.findOne({email: email})
         if(existEmail) {
-            const error = new Error("อีเมลนี้มีผู้ใช้งานในระบบแล้ว")
+            const error = new Error("This email is already registered.")
             error.statusCode = 400
             throw error
         }
@@ -38,7 +38,7 @@ exports.register = async (req, res, next) => {
         await user.save()
 
         res.status(201).json({
-            message: "ลงทะเบียนเรียบร้อยแล้ว"
+            message: "Registration successful."
         })
     } catch (error) {
         next(error)
@@ -49,24 +49,24 @@ exports.login = async (req, res, next) => {
     try {
         const {email, password} = req.body
 
-        // const errors = validationResult(req)
-        // if(!errors.isEmpty) {
-        //     const error = new Error("ข้อมูลที่ได้รับมาไม่ถูกต้อง")
-        //     error.statusCode = 422
-        //     error.validation = errors.array()
-        //     throw error
-        // }
+        const errors = validationResult(req)
+        if(!errors.isEmpty()) {
+            const error = new Error("The received data is not valid.")
+            error.statusCode = 422
+            error.validation = errors.array()
+            throw error
+        }
 
         const user = await User.findOne({email: email})
         if(!user) {
-            const error = new Error("ไม่พบผู้ใช้งานในระบบ")
+            const error = new Error("User not found.")
             error.statusCode = 400
             throw error
         }
 
         const isValid = await user.checkPassword(password)
         if (!isValid) {
-            const error = new Error("รหัสผ่านไม่ถูกต้อง")
+            const error = new Error("Invalid password.")
             error.statusCode = 401
             throw error
         }
@@ -91,7 +91,7 @@ exports.login = async (req, res, next) => {
 }
 
 exports.account = (req, res, next) => {
-    const {role, name, email} = req.body
+    const {role, name, email} = req.user
     res.status(200).json({
         name: name,
         email: email,

@@ -6,7 +6,7 @@
     } else {
         return res.status(403).json({
             error:{
-                message: 'ไม่มีสิทธิ์ใช้งานส่วนนี้ เฉพาะผู้ดูแลระบบเท่านั้น'
+                message: 'You are not authorized to access this resource. Only administrators are allowed to access this resource.'
             }
         })
     }
